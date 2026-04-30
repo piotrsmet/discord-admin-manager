@@ -3,6 +3,7 @@ import { Users, MessageSquare, Activity, Settings } from "lucide-react";
 import { auth, signIn, signOut } from "@/auth";
 import { getUserGuilds, getServerData, getAuditLogs, getGuildChannels } from "@/lib/discord";
 import EmbedBuilder from "@/components/ui/EmbedBuilder";
+import ActivityChart from "@/components/ui/ActivityChart";
 
 export default async function Dashboard() {
   const session = await auth();
@@ -43,11 +44,12 @@ export default async function Dashboard() {
   const channels = (botToken && guildId)
     ? await getGuildChannels(guildId, botToken)
     : [];
+    
   const memberCount = serverData?.approximate_member_count || "0";
   const activeCount = serverData?.approximate_presence_count || "0";
   const serverName = serverData?.name || "Nieznany serwer";
 
-const getActionName = (actionType: number) => {
+  const getActionName = (actionType: number) => {
     const actions: Record<number, string> = {
       10: "zaktualizował(a) ustawienia serwera",
       11: "utworzył(a) kanał",
@@ -128,7 +130,7 @@ const getActionName = (actionType: number) => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="col-span-1">
           <CardHeader title="Recent Activity" description="Latest events on your server" />
           <CardContent>
@@ -154,6 +156,10 @@ const getActionName = (actionType: number) => {
             </div>
           </CardContent>
         </Card>
+
+        <div className="col-span-1">
+          <ActivityChart data={auditLogs?.audit_log_entries || []} />
+        </div>
 
         <Card className="col-span-1">
           <CardHeader title="Server Health" description="Status of your key integrations" />

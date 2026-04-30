@@ -28,8 +28,8 @@ export async function getGuildChannels(guildId: string, botToken: string) {
   
   // Zwracamy tylko kanały tekstowe (0) i kanały z ogłoszeniami (5)
   return channels
-    .filter((channel: any) => channel.type === 0 || channel.type === 5)
-    .sort((a: any, b: any) => a.position - b.position); // Sortujemy tak, jak na Discordzie
+    .filter((channel: { type: number }) => channel.type === 0 || channel.type === 5)
+    .sort((a: { position: number }, b: { position: number }) => a.position - b.position); // Sortujemy tak, jak na Discordzie
 }
 
 export async function getAuditLogs(guildId: string, botToken: string) {
@@ -57,6 +57,40 @@ export async function getServerData(guildId: string, botToken: string) {
 
   if (!response.ok) {
     return null;
+  }
+
+  return response.json();
+}
+
+export async function getGuildRoles(guildId: string, botToken: string) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
+    headers: {
+      Authorization: `Bot ${botToken}`,
+    },
+    next: { tags: ['roles'], revalidate: 60 },
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const roles = await response.json();
+  // Sort by position descending (highest role first)
+  return roles.sort((a: { position: number }, b: { position: number }) => b.position - a.position);
+}
+
+export async function updateGuildRole(guildId: string, roleId: string, botToken: string, permissions: string) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles/${roleId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ permissions }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update role');
   }
 
   return response.json();
