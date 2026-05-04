@@ -1,24 +1,24 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { Users, MessageSquare, Activity, Settings } from "lucide-react";
 import { auth, signIn, signOut } from "@/auth";
-import { getUserGuilds, getServerData, getAuditLogs, getGuildChannels } from "@/lib/discord";
-import EmbedBuilder from "@/components/ui/EmbedBuilder";
-import ActivityChart from "@/components/ui/ActivityChart";
+import { getUserGuilds } from "@/lib/discord";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import Link from "next/link";
+import { LogOut } from "lucide-react";
 
-export default async function Dashboard() {
+export default async function Home() {
   const session = await auth();
 
   if (!session) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <h1 className="text-2xl font-bold">Zaloguj się, aby uzyskać dostęp do panelu</h1>
+        <h1 className="text-3xl font-bold text-foreground">Discord Admin Manager</h1>
+        <p className="text-gray-400 mb-4">Manage your Discord servers from one place</p>
         <form
           action={async () => {
             "use server";
             await signIn("discord");
           }}
         >
-          <button className="px-4 py-2 bg-[#5865F2] text-white rounded-md hover:bg-[#4752C4] transition-colors">
+          <button className="px-6 py-3 bg-[#5865F2] text-white rounded-md hover:bg-[#4752C4] transition-colors font-medium">
             Zaloguj przez Discord
           </button>
         </form>
@@ -26,167 +26,74 @@ export default async function Dashboard() {
     );
   }
 
-  const botToken = process.env.DISCORD_BOT_TOKEN;
-  const guildId = process.env.DISCORD_GUILD_ID;
-
-  const userGuilds = session?.accessToken 
+  // Fetch the user's guilds
+  const userGuilds = session.accessToken 
     ? await getUserGuilds(session.accessToken) 
     : [];
 
-  const serverData = (botToken && guildId) 
-    ? await getServerData(guildId, botToken) 
-    : null;
-
-  const auditLogs = (botToken && guildId)
-    ? await getAuditLogs(guildId, botToken)
-    : null;
-
-  const channels = (botToken && guildId)
-    ? await getGuildChannels(guildId, botToken)
-    : [];
-    
-  const memberCount = serverData?.approximate_member_count || "0";
-  const activeCount = serverData?.approximate_presence_count || "0";
-  const serverName = serverData?.name || "Nieznany serwer";
-
-  const getActionName = (actionType: number) => {
-    const actions: Record<number, string> = {
-      10: "zaktualizował(a) ustawienia serwera",
-      11: "utworzył(a) kanał",
-      12: "zaktualizował(a) kanał",
-      13: "usunął(a) kanał",
-      20: "wyrzucił(a) użytkownika",
-      22: "zbanował(a) użytkownika",
-      23: "odbanował(a) użytkownika",
-      24: "zaktualizował(a) profil członka",
-      25: "zmienił(a) role użytkownika",
-      26: "przeniósł(a) kogoś na inny kanał głosowy",
-      27: "rozłączył(a) kogoś z kanału głosowego",
-      28: "dodał(a) bota na serwer",
-      30: "utworzył(a) nową rolę",
-      31: "zaktualizował(a) rolę",
-      32: "usunął(a) rolę",
-      40: "stworzył(a) zaproszenie",
-      41: "zaktualizował(a) zaproszenie",
-      42: "usunął(a) zaproszenie",
-      50: "zaktualizował(a) webhooka",
-      60: "zaktualizował(a) emoji",
-      72: "wyczyścił(a) wiadomości (Purge)",
-      80: "dodał(a) nową integrację",
-      81: "zaktualizował(a) integrację",
-      82: "usunął(a) integrację",
-    };
-    
-    return actions[actionType] || `wykonał(a) nieznaną akcję (${actionType})`;
-  };
-
-  const stats = [
-    { name: "Total Members", value: memberCount, icon: Users, color: "text-blue-400" },
-    { name: "Active Online", value: activeCount, icon: Activity, color: "text-yellow-400" },
-    { name: "Messages Today", value: "1,204", icon: MessageSquare, color: "text-green-400" },
-    { name: "Bot Uptime", value: "99.9%", icon: Settings, color: "text-purple-400" },
-  ];
+  // Filter guilds where user has MANAGE_GUILD (0x20) or ADMINISTRATOR (0x8)
+  // For simplicity, we check if they have admin permissions or manage server
+  const managedGuilds = userGuilds.filter((guild: any) => {
+    const permissions = BigInt(guild.permissions);
+    const hasAdmin = (permissions & BigInt(0x8)) === BigInt(0x8);
+    const hasManageGuild = (permissions & BigInt(0x20)) === BigInt(0x20);
+    return hasAdmin || hasManageGuild;
+  });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Witaj, {session?.user?.name}</h1>
-        <div className="flex gap-4">
-          <button className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-md font-medium transition-colors text-sm">
-            Generate Report
+    <div className="min-h-screen p-8 flex flex-col max-w-6xl mx-auto">
+      <header className="flex items-center justify-between mb-12">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Wybierz serwer</h1>
+          <p className="text-gray-400 mt-1">
+            Zalogowano jako <span className="text-white font-medium">{session.user?.name}</span>
+          </p>
+        </div>
+        <form
+          action={async () => {
+            "use server";
+            await signOut();
+          }}
+        >
+          <button className="flex items-center gap-2 bg-secondary hover:bg-white/10 border border-accent text-white px-4 py-2 rounded-md font-medium transition-colors text-sm">
+            <LogOut className="w-4 h-4" />
+            Wyloguj
           </button>
-          <form
-            action={async () => {
-              "use server";
-              await signOut();
-            }}
-          >
-            <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-medium transition-colors text-sm">
-              Wyloguj
-            </button>
-          </form>
+        </form>
+      </header>
+
+      {managedGuilds.length === 0 ? (
+        <div className="text-center py-20 bg-secondary rounded-xl border border-accent">
+          <p className="text-xl font-semibold text-white mb-2">Brak serwerów do zarządzania</p>
+          <p className="text-gray-400">Musisz mieć uprawnienia Administratora lub Zarządzania Serwerem na jakimś serwerze.</p>
         </div>
-      </div>
-
-      <div className="text-sm text-gray-400 mb-4">
-        Statystyki dla serwera: <span className="font-bold text-white">{serverName}</span>
-        <br />
-        Należysz do {userGuilds.length || 0} serwerów Discord.
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <Card key={stat.name} className="hover:border-primary/50 transition-colors">
-            <CardContent className="p-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-400">{stat.name}</p>
-                <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
-              </div>
-              <div className={`p-3 rounded-lg bg-white/5 ${stat.color}`}>
-                <stat.icon className="w-6 h-6" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="col-span-1">
-          <CardHeader title="Recent Activity" description="Latest events on your server" />
-          <CardContent>
-            <div className="space-y-4">
-              {auditLogs?.audit_log_entries?.map((entry: any, i: number) => {
-                const user = auditLogs.users.find((u: any) => u.id === entry.user_id);
-                const userName = user ? `${user.username}` : "Nieznany";
-                
-                return (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-accent/30 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-secondary border border-accent flex items-center justify-center text-xs text-gray-400">
-                        {userName[0]?.toUpperCase() || "?"}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{userName}</p>
-                        <p className="text-xs text-gray-400">{getActionName(entry.action_type)}</p>
-                      </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {managedGuilds.map((guild: any) => (
+            <Link href={`/dashboard/${guild.id}`} key={guild.id}>
+              <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full group hover:shadow-[0_0_20px_rgba(88,101,242,0.15)]">
+                <CardContent className="p-6 flex flex-col items-center text-center">
+                  {guild.icon ? (
+                    <img 
+                      src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`} 
+                      alt={guild.name}
+                      className="w-20 h-20 rounded-full mb-4 group-hover:scale-105 transition-transform shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-secondary border border-accent mb-4 flex items-center justify-center text-2xl font-bold text-gray-400 group-hover:scale-105 transition-transform shadow-lg">
+                      {guild.name.charAt(0)}
                     </div>
-                  </div>
-                );
-              }) || <p className="text-sm text-gray-400">Brak ostatnich aktywności</p>}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="col-span-1">
-          <ActivityChart data={auditLogs?.audit_log_entries || []} />
+                  )}
+                  <h2 className="text-lg font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">{guild.name}</h2>
+                  <p className="text-xs text-gray-500 mt-2 bg-background px-3 py-1 rounded-full border border-accent/50">
+                    Zarządzaj serwerem
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
-
-        <Card className="col-span-1">
-          <CardHeader title="Server Health" description="Status of your key integrations" />
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { name: "Main Bot", status: "Operational", color: "bg-green-500" },
-                { name: "Music Bot", status: "High Latency", color: "bg-yellow-500" },
-                { name: "Auto-Moderator", status: "Operational", color: "bg-green-500" },
-                { name: "Discord API", status: "Operational", color: "bg-green-500" },
-              ].map((service, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-md bg-secondary border border-accent/50">
-                  <span className="text-sm font-medium text-gray-200">{service.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{service.status}</span>
-                    <span className={`w-2 h-2 rounded-full ${service.color}`}></span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mt-8">
-        <EmbedBuilder channels={channels}/>
-      </div>
+      )}
     </div>
   );
 }
