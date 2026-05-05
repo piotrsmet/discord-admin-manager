@@ -180,3 +180,69 @@ export async function deleteChannel(channelId: string, botToken: string) {
 
   return response.json();
 }
+
+export async function getGuildMembers(guildId: string, botToken: string) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`, {
+    headers: {
+      Authorization: `Bot ${botToken}`,
+    },
+    next: { revalidate: 60 },
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  return response.json();
+}
+
+export async function kickGuildMember(guildId: string, userId: string, botToken: string) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bot ${botToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`[kickGuildMember] Failed to kick member: ${text}`);
+    throw new Error('Failed to kick member');
+  }
+}
+
+export async function banGuildMember(guildId: string, userId: string, botToken: string) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/bans/${userId}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ delete_message_seconds: 0 }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`[banGuildMember] Failed to ban member: ${text}`);
+    throw new Error('Failed to ban member');
+  }
+}
+
+export async function updateGuildMember(guildId: string, userId: string, botToken: string, data: { roles?: string[] }) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bot ${botToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`[updateGuildMember] Failed to update member: ${text}`);
+    throw new Error('Failed to update member');
+  }
+
+  return response.json();
+}
