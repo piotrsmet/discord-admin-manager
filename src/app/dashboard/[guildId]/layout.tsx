@@ -7,7 +7,7 @@ export default function DashboardLayout({
   params,
 }: {
   children: ReactNode;
-  params: { guildId: string };
+  params: Promise<{ guildId: string }>;
 }) {
   return (
     <div className="h-full flex overflow-hidden">
