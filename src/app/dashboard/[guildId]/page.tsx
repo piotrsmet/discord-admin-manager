@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Users, MessageSquare, Activity, Settings, Zap } from "lucide-react";
 import { auth, signIn, signOut } from "@/auth";
-import { getUserGuilds, getServerData, getAuditLogs, getGuildChannels, getDiscordStatus } from "@/lib/discord";
+import { getUserGuilds, getServerData, getAuditLogs, getGuildChannels, getDiscordStatus, getActionName } from "@/lib/discord";
 import EmbedBuilder from "@/components/ui/EmbedBuilder";
 import ActivityChart from "@/components/ui/ActivityChart";
 
@@ -68,36 +68,21 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
   const boostsCount = serverData?.premium_subscription_count || "0";
   const textChannelsCount = channels.length;
 
-  const getActionName = (actionType: number) => {
-    const actions: Record<number, string> = {
-      10: "zaktualizował(a) ustawienia serwera",
-      11: "utworzył(a) kanał",
-      12: "zaktualizował(a) kanał",
-      13: "usunął(a) kanał",
-      20: "wyrzucił(a) użytkownika",
-      22: "zbanował(a) użytkownika",
-      23: "odbanował(a) użytkownika",
-      24: "zaktualizował(a) profil członka",
-      25: "zmienił(a) role użytkownika",
-      26: "przeniósł(a) kogoś na inny kanał głosowy",
-      27: "rozłączył(a) kogoś z kanału głosowego",
-      28: "dodał(a) bota na serwer",
-      30: "utworzył(a) nową rolę",
-      31: "zaktualizował(a) rolę",
-      32: "usunął(a) rolę",
-      40: "stworzył(a) zaproszenie",
-      41: "zaktualizował(a) zaproszenie",
-      42: "usunął(a) zaproszenie",
-      50: "zaktualizował(a) webhooka",
-      60: "zaktualizował(a) emoji",
-      72: "wyczyścił(a) wiadomości (Purge)",
-      80: "dodał(a) nową integrację",
-      81: "zaktualizował(a) integrację",
-      82: "usunął(a) integrację",
-    };
-    
-    return actions[actionType] || `wykonał(a) nieznaną akcję (${actionType})`;
-  };
+  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  
+  const allAuditLogs = auditLogs?.audit_log_entries || [];
+  const recentAuditLogs = allAuditLogs.slice(0, 5);
+  
+  const chartAuditLogs = allAuditLogs.filter((entry: any) => {
+    if (!entry.id) return false;
+    try {
+      const timestamp = Number(BigInt(entry.id) >> BigInt(22)) + 1420070400000;
+      return (now - timestamp) <= SEVEN_DAYS_MS;
+    } catch (e) {
+      return false;
+    }
+  });
 
   const stats = [
     { name: "Total Members", value: memberCount, icon: Users, color: "text-blue-400" },
@@ -157,7 +142,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
           <CardHeader title="Recent Activity" description="Latest events on your server" />
           <CardContent>
             <div className="space-y-4">
-              {auditLogs?.audit_log_entries?.map((entry: any, i: number) => {
+              {recentAuditLogs.map((entry: any, i: number) => {
                 const user = auditLogs.users.find((u: any) => u.id === entry.user_id);
                 const userName = user ? `${user.username}` : "Nieznany";
                 
@@ -180,7 +165,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
         </Card>
 
         <div className="col-span-1">
-          <ActivityChart data={auditLogs?.audit_log_entries || []} />
+          <ActivityChart data={chartAuditLogs} />
         </div>
 
         <Card className="col-span-1">

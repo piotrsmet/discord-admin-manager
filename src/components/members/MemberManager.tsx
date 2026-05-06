@@ -40,6 +40,7 @@ export default function MemberManager({
   const [searchQuery, setSearchQuery] = useState("");
   const [actionMember, setActionMember] = useState<Member | null>(null);
   const [actionType, setActionType] = useState<"kick" | "ban" | "roles" | null>(null);
+  const [sortBy, setSortBy] = useState<"joined_desc" | "joined_asc" | "name_asc" | "name_desc">("joined_desc");
   
   // Roles Modal State
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set());
@@ -74,6 +75,21 @@ export default function MemberManager({
       return name.toLowerCase().includes(query) || member.user.username.toLowerCase().includes(query);
     });
   }, [initialMembers, searchQuery]);
+
+  const sortedAndFilteredMembers = useMemo(() => {
+    const sorted = [...filteredMembers];
+    sorted.sort((a, b) => {
+      if (sortBy === "joined_desc") return new Date(b.joined_at).getTime() - new Date(a.joined_at).getTime();
+      if (sortBy === "joined_asc") return new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime();
+      
+      const nameA = (a.nick || a.user.global_name || a.user.username).toLowerCase();
+      const nameB = (b.nick || b.user.global_name || b.user.username).toLowerCase();
+      if (sortBy === "name_asc") return nameA.localeCompare(nameB);
+      if (sortBy === "name_desc") return nameB.localeCompare(nameA);
+      return 0;
+    });
+    return sorted;
+  }, [filteredMembers, sortBy]);
 
   const openActionModal = (member: Member, type: "kick" | "ban" | "roles") => {
     setActionMember(member);
@@ -150,15 +166,27 @@ export default function MemberManager({
           <p className="text-gray-400 text-sm">Przeglądaj i zarządzaj użytkownikami ({initialMembers.length})</p>
         </div>
         
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input 
-            type="text" 
-            placeholder="Szukaj użytkownika..." 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-secondary border border-accent/50 rounded-md py-2 pl-9 pr-4 text-sm text-gray-200 focus:outline-none focus:border-primary transition-colors placeholder:text-gray-600"
-          />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <input 
+              type="text" 
+              placeholder="Szukaj użytkownika..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-secondary border border-accent/50 rounded-md py-2 pl-9 pr-4 text-sm text-gray-200 focus:outline-none focus:border-primary transition-colors placeholder:text-gray-600"
+            />
+          </div>
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="bg-secondary border border-accent/50 rounded-md py-2 px-3 text-sm text-gray-200 focus:outline-none focus:border-primary transition-colors cursor-pointer"
+          >
+            <option value="joined_desc">Najnowsi</option>
+            <option value="joined_asc">Najstarsi</option>
+            <option value="name_asc">A-Z</option>
+            <option value="name_desc">Z-A</option>
+          </select>
         </div>
       </div>
 
@@ -174,8 +202,8 @@ export default function MemberManager({
               </tr>
             </thead>
             <tbody className="divide-y divide-accent/30">
-              {filteredMembers.length > 0 ? (
-                filteredMembers.map((member) => {
+              {sortedAndFilteredMembers.length > 0 ? (
+                sortedAndFilteredMembers.map((member) => {
                   const displayName = member.nick || member.user.global_name || member.user.username;
                   
                   // Sort member roles by position

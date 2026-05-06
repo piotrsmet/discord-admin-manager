@@ -48,8 +48,8 @@ export async function getAllGuildChannels(guildId: string, botToken: string) {
   return channels.sort((a: { position: number }, b: { position: number }) => a.position - b.position);
 }
 
-export async function getAuditLogs(guildId: string, botToken: string) {
-  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/audit-logs?limit=5`, {
+export async function getAuditLogs(guildId: string, botToken: string, limit: number = 100) {
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/audit-logs?limit=${limit}`, {
     headers: {
       Authorization: `Bot ${botToken}`,
     },
@@ -245,4 +245,35 @@ export async function updateGuildMember(guildId: string, userId: string, botToke
   }
 
   return response.json();
+}
+
+export function getActionName(actionType: number) {
+  const actions: Record<number, string> = {
+    10: "zaktualizował(a) ustawienia serwera",
+    11: "utworzył(a) kanał",
+    12: "zaktualizował(a) kanał",
+    13: "usunął(a) kanał",
+    20: "wyrzucił(a) użytkownika",
+    22: "zbanował(a) użytkownika",
+    23: "odbanował(a) użytkownika",
+    24: "zaktualizował(a) profil członka",
+    25: "zmienił(a) role użytkownika",
+    26: "przeniósł(a) kogoś na inny kanał głosowy",
+    27: "rozłączył(a) kogoś z kanału głosowego",
+    28: "dodał(a) bota na serwer",
+    30: "utworzył(a) nową rolę",
+    31: "zaktualizował(a) rolę",
+    32: "usunął(a) rolę",
+    40: "stworzył(a) zaproszenie",
+    41: "zaktualizował(a) zaproszenie",
+    42: "usunął(a) zaproszenie",
+    50: "zaktualizował(a) webhooka",
+    60: "zaktualizował(a) emoji",
+    72: "wyczyścił(a) wiadomości (Purge)",
+    80: "dodał(a) nową integrację",
+    81: "zaktualizował(a) integrację",
+    82: "usunął(a) integrację",
+  };
+  
+  return actions[actionType] || `wykonał(a) nieznaną akcję (${actionType})`;
 }
