@@ -188,9 +188,14 @@ export default function ChannelManager({ initialChannels, guildId }: { initialCh
   return (
     <div className="space-y-6 relative">
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Zarządzanie Kanałami</h1>
-          <p className="text-gray-400 text-sm">Przeglądaj strukturę kanałów serwera</p>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary/10 text-primary rounded-lg">
+            <Hash className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Zarządzanie Kanałami</h1>
+            <p className="text-gray-400 text-sm">Przeglądaj strukturę kanałów serwera</p>
+          </div>
         </div>
         
         <div className="flex items-center gap-3 w-full sm:w-auto">

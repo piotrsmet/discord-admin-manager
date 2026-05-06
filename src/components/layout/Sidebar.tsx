@@ -1,10 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { Home, Users, Settings, Shield, Activity, MessageSquare } from 'lucide-react';
+import { Home, Users, Settings, Shield, Activity, MessageSquare, X } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose: () => void }) {
   const params = useParams();
   const pathname = usePathname();
   const guildId = params.guildId as string;
@@ -22,8 +22,14 @@ export default function Sidebar() {
 
   return (
     <aside className="w-64 bg-secondary flex flex-col h-full border-r border-accent shrink-0">
-      <div className="h-16 flex items-center px-6 border-b border-accent font-bold text-lg tracking-wide text-foreground">
-        Discord Admin
+      <div className="h-16 flex items-center justify-between px-6 border-b border-accent font-bold text-lg tracking-wide text-foreground">
+        <span>Discord Admin</span>
+        <button 
+          onClick={onClose}
+          className="p-1 text-gray-400 hover:text-white md:hidden transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {

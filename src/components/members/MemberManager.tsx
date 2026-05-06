@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Search, UserX, ShieldBan, Shield, User, Clock, Settings, X, MoreVertical, Tags, Check } from "lucide-react";
+import { Search, UserX, ShieldBan, Shield, User, Users, Clock, Settings, X, MoreVertical, Tags, Check } from "lucide-react";
 import { kickMember, banMember, updateMemberRoles } from "@/app/actions/members";
 import Image from "next/image";
 
@@ -161,9 +161,14 @@ export default function MemberManager({
   return (
     <div className="space-y-6 relative">
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Zarządzanie Członkami</h1>
-          <p className="text-gray-400 text-sm">Przeglądaj i zarządzaj użytkownikami ({initialMembers.length})</p>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary/10 text-primary rounded-lg">
+            <Users className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Zarządzanie Członkami</h1>
+            <p className="text-gray-400 text-sm">Przeglądaj i zarządzaj użytkownikami ({initialMembers.length})</p>
+          </div>
         </div>
         
         <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -190,11 +195,12 @@ export default function MemberManager({
         </div>
       </div>
 
-      <div className="bg-secondary/30 rounded-xl border border-accent/30 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-accent/50 bg-secondary/50 text-xs uppercase tracking-wider text-gray-400">
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-accent/50 bg-secondary text-xs uppercase tracking-wider text-gray-400">
                 <th className="px-6 py-4 font-medium">Użytkownik</th>
                 <th className="px-6 py-4 font-medium">Dołączył(a)</th>
                 <th className="px-6 py-4 font-medium">Role</th>
@@ -304,8 +310,9 @@ export default function MemberManager({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Action Modal */}
       {actionMember && actionType && (

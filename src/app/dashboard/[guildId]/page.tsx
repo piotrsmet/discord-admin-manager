@@ -4,6 +4,7 @@ import { auth, signIn, signOut } from "@/auth";
 import { getUserGuilds, getServerData, getAuditLogs, getGuildChannels, getDiscordStatus, getActionName } from "@/lib/discord";
 import EmbedBuilder from "@/components/ui/EmbedBuilder";
 import ActivityChart from "@/components/ui/ActivityChart";
+import ReportGenerator from "@/components/ui/ReportGenerator";
 
 export default async function Dashboard({ params }: { params: Promise<{ guildId: string }> }) {
   const session = await auth();
@@ -111,9 +112,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Witaj, {session?.user?.name}</h1>
         <div className="flex gap-4">
-          <button className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-md font-medium transition-colors text-sm">
-            Generate Report
-          </button>
+          <ReportGenerator guildId={guildId} />
         </div>
       </div>
 

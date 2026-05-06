@@ -142,7 +142,7 @@ export default function LogsManager({ initialLogs, users, channels, roles }: Log
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-gray-400 uppercase bg-secondary border-b border-accent">
+              <thead className="text-xs text-gray-400 uppercase bg-secondary border-b border-accent/50 tracking-wider">
                 <tr>
                   <th scope="col" className="px-6 py-4 font-medium">Użytkownik</th>
                   <th scope="col" className="px-6 py-4 font-medium">Akcja</th>
@@ -153,7 +153,7 @@ export default function LogsManager({ initialLogs, users, channels, roles }: Log
               <tbody className="divide-y divide-accent/30">
                 {filteredAndSortedLogs.length > 0 ? (
                   filteredAndSortedLogs.map((log, i) => (
-                    <tr key={i} className="hover:bg-white/5 transition-colors">
+                    <tr key={i} className="hover:bg-secondary/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-secondary border border-accent flex items-center justify-center text-xs text-gray-400">
