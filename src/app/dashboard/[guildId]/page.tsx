@@ -5,16 +5,18 @@ import { getUserGuilds, getServerData, getAuditLogs, getGuildChannels, getDiscor
 import EmbedBuilder from "@/components/ui/EmbedBuilder";
 import ActivityChart from "@/components/ui/ActivityChart";
 import ReportGenerator from "@/components/ui/ReportGenerator";
+import { getDictionary } from "@/lib/locale";
 
 export default async function Dashboard({ params }: { params: Promise<{ guildId: string }> }) {
   const session = await auth();
+  const dict = await getDictionary();
 
   const { guildId } = await params;
   
   if (!session && guildId !== "demo") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <h1 className="text-2xl font-bold">Zaloguj się, aby uzyskać dostęp do panelu</h1>
+        <h1 className="text-2xl font-bold">{dict.dashboard.loginRequired}</h1>
         <form
           action={async () => {
             "use server";
@@ -22,7 +24,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
           }}
         >
           <button className="px-4 py-2 bg-[#5865F2] text-white rounded-md hover:bg-[#4752C4] transition-colors">
-            Zaloguj przez Discord
+            {dict.dashboard.loginButton}
           </button>
         </form>
       </div>
@@ -32,10 +34,10 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
   const botToken = guildId === "demo" ? "demo" : process.env.DISCORD_BOT_TOKEN;
   const clientId = guildId === "demo" ? "demo" : process.env.DISCORD_CLIENT_ID;
 
-  const userDisplayName = session?.user?.name || (guildId === "demo" ? "Gość (Demo)" : "Użytkownik");
+  const userDisplayName = session?.user?.name || (guildId === "demo" ? dict.dashboard.guest : dict.dashboard.user);
 
   if (!botToken) {
-    return <div>Brak konfiguracji bota.</div>;
+    return <div>{dict.dashboard.noBotConfig}</div>;
   }
 
   const serverData = await getServerData(guildId, botToken);
@@ -46,9 +48,9 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
     
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <h2 className="text-2xl font-bold text-white mb-2">Bot nie jest na tym serwerze</h2>
+        <h2 className="text-2xl font-bold text-white mb-2">{dict.dashboard.botNotOnServer}</h2>
         <p className="text-gray-400 mb-6 max-w-md">
-          Aby zarządzać tym serwerem, musisz zaprosić bota z odpowiednimi uprawnieniami (Administrator).
+          {dict.dashboard.botNotOnServerDesc}
         </p>
         <a 
           href={inviteUrl} 
@@ -56,7 +58,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
           rel="noopener noreferrer"
           className="px-6 py-3 bg-[#5865F2] text-white font-medium rounded-md hover:bg-[#4752C4] transition-colors"
         >
-          Zaproś Bota
+          {dict.dashboard.inviteBot}
         </a>
       </div>
     );
@@ -68,7 +70,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
     
   const memberCount = serverData?.approximate_member_count || "0";
   const activeCount = serverData?.approximate_presence_count || "0";
-  const serverName = serverData?.name || "Nieznany serwer";
+  const serverName = serverData?.name || dict.dashboard.unknownServer;
   const boostsCount = serverData?.premium_subscription_count || "0";
   const textChannelsCount = channels.length;
 
@@ -89,10 +91,10 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
   });
 
   const stats = [
-    { name: "Total Members", value: memberCount, icon: Users, color: "text-blue-400" },
-    { name: "Active Online", value: activeCount, icon: Activity, color: "text-yellow-400" },
-    { name: "Kanały Tekstowe", value: textChannelsCount.toString(), icon: MessageSquare, color: "text-green-400" },
-    { name: "Liczba Ulepszeń", value: boostsCount.toString(), icon: Zap, color: "text-purple-400" },
+    { name: dict.dashboard.totalMembers, value: memberCount, icon: Users, color: "text-blue-400" },
+    { name: dict.dashboard.activeOnline, value: activeCount, icon: Activity, color: "text-yellow-400" },
+    { name: dict.dashboard.textChannels, value: textChannelsCount.toString(), icon: MessageSquare, color: "text-green-400" },
+    { name: dict.dashboard.boostsCount, value: boostsCount.toString(), icon: Zap, color: "text-purple-400" },
   ];
 
   // Map real Discord API components or use fallbacks if API is down
@@ -113,14 +115,14 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Witaj, {userDisplayName}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{dict.dashboard.welcome}, {userDisplayName}</h1>
         <div className="flex gap-4">
           <ReportGenerator guildId={guildId} />
         </div>
       </div>
 
       <div className="text-sm text-gray-400 mb-4">
-        Statystyki dla serwera: <span className="font-bold text-white">{serverName}</span>
+        {dict.dashboard.statsFor} <span className="font-bold text-white">{serverName}</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -141,12 +143,12 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="col-span-1">
-          <CardHeader title="Recent Activity" description="Latest events on your server" />
+          <CardHeader title={dict.dashboard.recentActivity} description={dict.dashboard.recentActivityDesc} />
           <CardContent>
             <div className="space-y-4">
               {recentAuditLogs.map((entry: any, i: number) => {
                 const user = auditLogs.users.find((u: any) => u.id === entry.user_id);
-                const userName = user ? `${user.username}` : "Nieznany";
+                const userName = user ? `${user.username}` : dict.dashboard.unknownUser;
                 
                 return (
                   <div key={i} className="flex items-center justify-between py-2 border-b border-accent/30 last:border-0">
@@ -161,7 +163,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
                     </div>
                   </div>
                 );
-              }) || <p className="text-sm text-gray-400">Brak ostatnich aktywności</p>}
+              }) || <p className="text-sm text-gray-400">{dict.dashboard.noActivity}</p>}
             </div>
           </CardContent>
         </Card>
@@ -171,7 +173,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
         </div>
 
         <Card className="col-span-1">
-          <CardHeader title="Discord Health" description="Status of Discord services" />
+          <CardHeader title={dict.dashboard.discordHealth} description={dict.dashboard.discordHealthDesc} />
           <CardContent>
             <div className="space-y-4">
               {statusComponents.map((service: any, i: number) => (

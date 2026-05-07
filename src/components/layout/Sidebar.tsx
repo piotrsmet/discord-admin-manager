@@ -1,10 +1,11 @@
 "use client";
 
 import Link from 'next/link';
-import { Home, Users, Settings, Shield, Activity, MessageSquare, X } from 'lucide-react';
+import { Home, Users, Shield, Activity, MessageSquare, X } from 'lucide-react';
 import { useParams, usePathname } from 'next/navigation';
+import { Dictionary } from '@/lib/dictionaries';
 
-export default function Sidebar({ onClose }: { onClose: () => void }) {
+export default function Sidebar({ onClose, dict }: { onClose: () => void; dict: Dictionary }) {
   const params = useParams();
   const pathname = usePathname();
   const guildId = params.guildId as string;
@@ -12,12 +13,11 @@ export default function Sidebar({ onClose }: { onClose: () => void }) {
   const basePath = `/dashboard/${guildId}`;
 
   const navItems = [
-    { name: 'Dashboard', href: basePath, icon: Home, exact: true },
-    { name: 'Members', href: `${basePath}/members`, icon: Users },
-    { name: 'Roles & Permissions', href: `${basePath}/roles`, icon: Shield },
-    { name: 'Channels', href: `${basePath}/channels`, icon: MessageSquare },
-    { name: 'Activity Logs', href: `${basePath}/logs`, icon: Activity },
-    { name: 'Bot Settings', href: `${basePath}/settings`, icon: Settings },
+    { name: dict.sidebar.dashboard, href: basePath, icon: Home, exact: true },
+    { name: dict.sidebar.members, href: `${basePath}/members`, icon: Users },
+    { name: dict.sidebar.roles, href: `${basePath}/roles`, icon: Shield },
+    { name: dict.sidebar.channels, href: `${basePath}/channels`, icon: MessageSquare },
+    { name: dict.sidebar.logs, href: `${basePath}/logs`, icon: Activity },
   ];
 
   return (
@@ -52,7 +52,7 @@ export default function Sidebar({ onClose }: { onClose: () => void }) {
       </nav>
       <div className="p-4 border-t border-accent text-xs text-gray-400 text-center flex flex-col gap-2">
         <Link href="/" className="hover:text-white transition-colors block p-2 rounded-md bg-white/5 hover:bg-white/10 mb-2 border border-accent/50">
-          ← Zmień serwer
+          {dict.sidebar.changeServer}
         </Link>
         Discord Manager v0.2
       </div>
