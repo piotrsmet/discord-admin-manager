@@ -4,13 +4,17 @@ import { auth } from "@/auth";
 export async function POST(request: Request) {
   const session = await auth();
   
-  if (!session) {
-    return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
-  }
-
   try {
     const body = await request.json();
-    const { channelId, title, description, color } = body;
+    const { channelId, title, description, color, guildId } = body;
+
+    if (!session && guildId !== "demo") {
+      return NextResponse.json({ error: "Brak autoryzacji" }, { status: 401 });
+    }
+
+    if (guildId === "demo") {
+      return NextResponse.json({ success: true });
+    }
 
     if (!channelId || !description) {
       return NextResponse.json({ error: "Brak wymaganych danych" }, { status: 400 });
@@ -32,7 +36,7 @@ export async function POST(request: Request) {
             description: description,
             color: colorInt,
             author: {
-              name: session.user?.name || "Użytkownik Dashboardu",
+              name: session?.user?.name || "Użytkownik Dashboardu",
             }
           }
         ]

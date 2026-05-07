@@ -1,3 +1,5 @@
+import { demoServerData, demoChannels, demoRoles, demoMembers, demoAuditLogs, demoDiscordStatus } from "./demo-data";
+
 export async function getUserGuilds(accessToken: string) {
   const response = await fetch("https://discord.com/api/v10/users/@me/guilds", {
     headers: {
@@ -13,6 +15,12 @@ export async function getUserGuilds(accessToken: string) {
 }
 
 export async function getGuildChannels(guildId: string, botToken: string) {
+  if (guildId === "demo") {
+    return demoChannels
+      .filter((channel: { type: number }) => channel.type === 0 || channel.type === 5)
+      .sort((a: { position: number }, b: { position: number }) => a.position - b.position);
+  }
+
   const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
     headers: {
       Authorization: `Bot ${botToken}`,
@@ -33,6 +41,10 @@ export async function getGuildChannels(guildId: string, botToken: string) {
 }
 
 export async function getAllGuildChannels(guildId: string, botToken: string) {
+  if (guildId === "demo") {
+    return [...demoChannels].sort((a: { position: number }, b: { position: number }) => a.position - b.position);
+  }
+
   const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/channels`, {
     headers: {
       Authorization: `Bot ${botToken}`,
@@ -49,6 +61,8 @@ export async function getAllGuildChannels(guildId: string, botToken: string) {
 }
 
 export async function getAuditLogs(guildId: string, botToken: string, limit: number = 100) {
+  if (guildId === "demo") return demoAuditLogs;
+
   const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/audit-logs?limit=${limit}`, {
     headers: {
       Authorization: `Bot ${botToken}`,
@@ -64,6 +78,8 @@ export async function getAuditLogs(guildId: string, botToken: string, limit: num
 }
 
 export async function getServerData(guildId: string, botToken: string) {
+  if (guildId === "demo") return demoServerData;
+
   const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}?with_counts=true`, {
     headers: {
       Authorization: `Bot ${botToken}`,
@@ -80,7 +96,9 @@ export async function getServerData(guildId: string, botToken: string) {
   return response.json();
 }
 
-export async function getDiscordStatus() {
+export async function getDiscordStatus(guildId?: string) {
+  if (guildId === "demo") return demoDiscordStatus;
+
   try {
     const response = await fetch("https://discordstatus.com/api/v2/summary.json", {
       next: { revalidate: 300 } // cache for 5 minutes
@@ -93,6 +111,10 @@ export async function getDiscordStatus() {
 }
 
 export async function getGuildRoles(guildId: string, botToken: string) {
+  if (guildId === "demo") {
+    return [...demoRoles].sort((a: { position: number }, b: { position: number }) => b.position - a.position);
+  }
+
   const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
     headers: {
       Authorization: `Bot ${botToken}`,
@@ -182,6 +204,8 @@ export async function deleteChannel(channelId: string, botToken: string) {
 }
 
 export async function getGuildMembers(guildId: string, botToken: string) {
+  if (guildId === "demo") return demoMembers;
+
   const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members?limit=1000`, {
     headers: {
       Authorization: `Bot ${botToken}`,

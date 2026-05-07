@@ -12,16 +12,22 @@ export default async function Home() {
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <h1 className="text-3xl font-bold text-foreground">Discord Admin Manager</h1>
         <p className="text-gray-400 mb-4">Manage your Discord servers from one place</p>
-        <form
-          action={async () => {
-            "use server";
-            await signIn("discord");
-          }}
-        >
-          <button className="px-6 py-3 bg-[#5865F2] text-white rounded-md hover:bg-[#4752C4] transition-colors font-medium">
-            Zaloguj przez Discord
-          </button>
-        </form>
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <form
+            action={async () => {
+              "use server";
+              await signIn("discord");
+            }}
+          >
+            <button className="w-full sm:w-auto px-6 py-3 bg-[#5865F2] text-white rounded-md hover:bg-[#4752C4] transition-colors font-medium">
+              Zaloguj przez Discord
+            </button>
+          </form>
+          
+          <Link href="/dashboard/demo" className="w-full sm:w-auto px-6 py-3 bg-secondary border border-accent text-white rounded-md hover:bg-white/10 transition-colors font-medium text-center">
+            Zobacz Demo
+          </Link>
+        </div>
       </div>
     );
   }

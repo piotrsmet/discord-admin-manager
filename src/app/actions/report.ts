@@ -5,7 +5,7 @@ import { getServerData, getAuditLogs, getGuildChannels, getActionName } from "@/
 
 export async function generateServerReport(guildId: string) {
   try {
-    const botToken = process.env.DISCORD_BOT_TOKEN;
+    const botToken = guildId === "demo" ? "demo" : process.env.DISCORD_BOT_TOKEN;
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!botToken) {

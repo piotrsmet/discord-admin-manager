@@ -12,6 +12,16 @@ export async function toggleRolePermission(
   add: boolean
 ) {
   try {
+    if (guildId === "demo") {
+      let perms = BigInt(currentPermissions);
+      const permissionFlag = BigInt(permissionFlagStr);
+      if (add) {
+        perms |= permissionFlag;
+      } else {
+        perms &= ~permissionFlag;
+      }
+      return { success: true, newPermissions: perms.toString() };
+    }
     let perms = BigInt(currentPermissions);
     const permissionFlag = BigInt(permissionFlagStr);
     if (add) {

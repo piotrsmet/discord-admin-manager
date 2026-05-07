@@ -6,7 +6,9 @@ import { revalidatePath } from "next/cache";
 
 export async function editChannel(channelId: string, guildId: string, data: { name: string; nsfw?: boolean; rate_limit_per_user?: number }) {
   const session = await auth();
-  if (!session) return { error: "Brak autoryzacji" };
+  if (!session && guildId !== "demo") return { error: "Brak autoryzacji" };
+
+  if (guildId === "demo") return { success: true };
 
   const botToken = process.env.DISCORD_BOT_TOKEN;
   if (!botToken) return { error: "Brak konfiguracji bota" };
@@ -24,7 +26,9 @@ export async function editChannel(channelId: string, guildId: string, data: { na
 
 export async function createNewChannel(guildId: string, data: { name: string; type: number; parent_id?: string }) {
   const session = await auth();
-  if (!session) return { error: "Brak autoryzacji" };
+  if (!session && guildId !== "demo") return { error: "Brak autoryzacji" };
+
+  if (guildId === "demo") return { success: true };
 
   const botToken = process.env.DISCORD_BOT_TOKEN;
   if (!botToken) return { error: "Brak konfiguracji bota" };
@@ -42,7 +46,9 @@ export async function createNewChannel(guildId: string, data: { name: string; ty
 
 export async function removeChannel(channelId: string, guildId: string) {
   const session = await auth();
-  if (!session) return { error: "Brak autoryzacji" };
+  if (!session && guildId !== "demo") return { error: "Brak autoryzacji" };
+
+  if (guildId === "demo") return { success: true };
 
   const botToken = process.env.DISCORD_BOT_TOKEN;
   if (!botToken) return { error: "Brak konfiguracji bota" };

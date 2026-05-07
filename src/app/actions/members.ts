@@ -6,7 +6,9 @@ import { revalidatePath } from "next/cache";
 
 export async function kickMember(guildId: string, userId: string) {
   const session = await auth();
-  if (!session) return { error: "Brak autoryzacji" };
+  if (!session && guildId !== "demo") return { error: "Brak autoryzacji" };
+
+  if (guildId === "demo") return { success: true };
 
   const botToken = process.env.DISCORD_BOT_TOKEN;
   if (!botToken) return { error: "Brak konfiguracji bota" };
@@ -22,7 +24,9 @@ export async function kickMember(guildId: string, userId: string) {
 
 export async function banMember(guildId: string, userId: string) {
   const session = await auth();
-  if (!session) return { error: "Brak autoryzacji" };
+  if (!session && guildId !== "demo") return { error: "Brak autoryzacji" };
+
+  if (guildId === "demo") return { success: true };
 
   const botToken = process.env.DISCORD_BOT_TOKEN;
   if (!botToken) return { error: "Brak konfiguracji bota" };
@@ -38,7 +42,9 @@ export async function banMember(guildId: string, userId: string) {
 
 export async function updateMemberRoles(guildId: string, userId: string, roles: string[]) {
   const session = await auth();
-  if (!session) return { error: "Brak autoryzacji" };
+  if (!session && guildId !== "demo") return { error: "Brak autoryzacji" };
+
+  if (guildId === "demo") return { success: true };
 
   const botToken = process.env.DISCORD_BOT_TOKEN;
   if (!botToken) return { error: "Brak konfiguracji bota" };

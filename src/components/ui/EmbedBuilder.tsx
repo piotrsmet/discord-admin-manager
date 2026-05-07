@@ -11,9 +11,10 @@ interface Channel {
 
 interface EmbedBuilderProps {
   channels: Channel[];
+  guildId: string;
 }
 
-export default function EmbedBuilder({ channels }: EmbedBuilderProps) {
+export default function EmbedBuilder({ channels, guildId }: EmbedBuilderProps) {
   const [channelId, setChannelId] = useState("");
   const [title, setTitle] = useState("Nowa aktualizacja!");
   const [description, setDescription] = useState("Tutaj wpisz treść swojej wiadomości...");
@@ -35,7 +36,7 @@ export default function EmbedBuilder({ channels }: EmbedBuilderProps) {
       const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channelId, title, description, color }),
+        body: JSON.stringify({ channelId, title, description, color, guildId }),
       });
 
       if (res.ok) {

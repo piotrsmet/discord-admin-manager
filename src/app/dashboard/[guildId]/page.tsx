@@ -9,7 +9,9 @@ import ReportGenerator from "@/components/ui/ReportGenerator";
 export default async function Dashboard({ params }: { params: Promise<{ guildId: string }> }) {
   const session = await auth();
 
-  if (!session) {
+  const { guildId } = await params;
+  
+  if (!session && guildId !== "demo") {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <h1 className="text-2xl font-bold">Zaloguj się, aby uzyskać dostęp do panelu</h1>
@@ -27,9 +29,10 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
     );
   }
 
-  const { guildId } = await params;
-  const botToken = process.env.DISCORD_BOT_TOKEN;
-  const clientId = process.env.DISCORD_CLIENT_ID;
+  const botToken = guildId === "demo" ? "demo" : process.env.DISCORD_BOT_TOKEN;
+  const clientId = guildId === "demo" ? "demo" : process.env.DISCORD_CLIENT_ID;
+
+  const userDisplayName = session?.user?.name || (guildId === "demo" ? "Gość (Demo)" : "Użytkownik");
 
   if (!botToken) {
     return <div>Brak konfiguracji bota.</div>;
@@ -110,7 +113,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Witaj, {session?.user?.name}</h1>
+        <h1 className="text-2xl font-bold text-foreground">Witaj, {userDisplayName}</h1>
         <div className="flex gap-4">
           <ReportGenerator guildId={guildId} />
         </div>
@@ -186,7 +189,7 @@ export default async function Dashboard({ params }: { params: Promise<{ guildId:
       </div>
 
       <div className="mt-8">
-        <EmbedBuilder channels={channels}/>
+        <EmbedBuilder channels={channels} guildId={guildId} />
       </div>
     </div>
   );

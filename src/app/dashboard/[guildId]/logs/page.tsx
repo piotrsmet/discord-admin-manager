@@ -5,7 +5,9 @@ import LogsManager from "@/components/logs/LogsManager";
 export default async function LogsPage({ params }: { params: Promise<{ guildId: string }> }) {
   const session = await auth();
 
-  if (!session) {
+  const { guildId } = await params;
+
+  if (!session && guildId !== "demo") {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <h1 className="text-2xl font-bold">Zaloguj się, aby uzyskać dostęp</h1>
@@ -23,8 +25,7 @@ export default async function LogsPage({ params }: { params: Promise<{ guildId: 
     );
   }
 
-  const { guildId } = await params;
-  const botToken = process.env.DISCORD_BOT_TOKEN;
+  const botToken = guildId === "demo" ? "demo" : process.env.DISCORD_BOT_TOKEN;
 
   if (!botToken) {
     return <div>Brak konfiguracji bota.</div>;

@@ -7,12 +7,13 @@ import { redirect } from "next/navigation";
 export default async function RolesPage({ params }: { params: Promise<{ guildId: string }> }) {
   const session = await auth();
 
-  if (!session) {
+  const { guildId } = await params;
+
+  if (!session && guildId !== "demo") {
     redirect("/");
   }
 
-  const { guildId } = await params;
-  const botToken = process.env.DISCORD_BOT_TOKEN;
+  const botToken = guildId === "demo" ? "demo" : process.env.DISCORD_BOT_TOKEN;
 
   if (!botToken || !guildId) {
     return <div>Missing environment variables</div>;
